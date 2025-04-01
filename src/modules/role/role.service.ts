@@ -5,7 +5,11 @@ import { roles } from '@prisma/client';
 @Injectable()
 export class RoleService {
   constructor(private prisma: PrismaService) {}
-  getAllRole(): Promise<roles[]> {
-    return this.prisma.roles.findMany();
+  async getAllRole(): Promise<roles[]> {
+    return await this.prisma.roles.findMany();
+  }
+
+  async getById(id: number): Promise<roles | null> {
+    return await this.prisma.roles.findUnique({ where: { id } });
   }
 }
