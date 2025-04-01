@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model users {
+  id          Int       @id @default(autoincrement())
+  username    String
+  email       String    @unique
+  password    String
+  avatar      String?
+  remember_me String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user_roles  user_role[]
+  reviews     motorbike_reviews[]
+  payments    payments[]
+  bookings    bookings[]
+}
+
+model roles {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user_roles  user_role[]
+}
+
+model user_role {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  role_id    Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       users    @relation(fields: [user_id], references: [id])
+  role       roles    @relation(fields: [role_id], references: [id])
+}
+
+model motorbike_brands {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  motorbikes  motorbikes[]
+}
+
+model motorbikes {
+  id          Int               @id @default(autoincrement())
+  brand_id    Int
+  name        String
+  price       Float
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
+  brand       motorbike_brands  @relation(fields: [brand_id], references: [id])
+  reviews     motorbike_reviews[]
+  payments    payments[]
+  bookings    bookings[]
+}
+
+model motorbike_reviews {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  motorbike_id Int
+  rating      Int
+  comment     String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user        users     @relation(fields: [user_id], references: [id])
+  motorbike   motorbikes @relation(fields: [motorbike_id], references: [id])
+}
+
+model payments {
+  id               Int       @id @default(autoincrement())
+  user_id          Int
+  motorbike_id     Int?
+  stripe_payment_id String    @unique
+  amount           Float
+  currency         String
+  status           String
+  payment_method   String
+  stripe_customer_id String?
+  receipt_url      String?
+  description      String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  user             users     @relation(fields: [user_id], references: [id])
+  motorbike        motorbikes? @relation(fields: [motorbike_id], references: [id])
+  booking          bookings? @relation
+}
+
+model bookings {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  motorbike_id    Int
+  pickup_location String
+  dropoff_location String
+  pickup_date     DateTime
+  dropoff_date    DateTime
+  total_price     Float
+  payment_id      Int?      @unique
+  status          String
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  user            users     @relation(fields: [user_id], references: [id])
+  motorbike       motorbikes @relation(fields: [motorbike_id], references: [id])
+  payment         payments? @relation(fields: [payment_id], references: [id])
+}
