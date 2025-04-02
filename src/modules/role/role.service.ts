@@ -21,4 +21,6 @@ export class RoleService {
       },
     });
   }
+
+  // Rest of CRUD below...
 }
