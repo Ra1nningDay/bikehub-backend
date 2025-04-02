@@ -9,10 +9,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { users } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PaginatedResponse, PaginationDto } from 'src/common/dto';
+import { LoggerService } from 'src/common/logger.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private logger: LoggerService,
+  ) {}
   async createUser(createUserDto: CreateUserDto): Promise<users> {
     const exitingUser = await this.prisma.users.findUnique({
       where: {
@@ -20,6 +24,9 @@ export class UsersService {
       },
     });
     if (exitingUser) {
+      this.logger.error(
+        `Registration failed: Email ${createUserDto.email} already exists`,
+      );
       throw new BadRequestException('User already exits');
     }
     const saltRound = 10;
