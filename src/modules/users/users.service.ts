@@ -1,14 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { users } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { PaginatedResponse, PaginationDto } from 'src/common/dto';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
   async createUser(createUserDto: CreateUserDto): Promise<users> {
+    const exitingUser = await this.prisma.users.findUnique({
+      where: {
+        email: createUserDto.email,
+      },
+    });
+    if (exitingUser) {
+      throw new BadRequestException('User already exits');
+    }
     const saltRound = 10;
     const hash: string = await bcrypt.hash(createUserDto.password, saltRound);
 
@@ -19,12 +32,12 @@ export class UsersService {
     });
 
     if (!role) {
-      throw new Error('Role "user" not found');
+      throw new NotFoundException('Role "user" not found');
     }
 
     return this.prisma.users.create({
       data: {
-        username: createUserDto.username,
+        username: createUserDto.email,
         email: createUserDto.email,
         password: hash,
         avatar: 'default-avatar.png',
@@ -50,18 +63,67 @@ export class UsersService {
     });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<users>> {
+    const { page, limit } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      this.prisma.users.findMany({
+        skip,
+        take: limit,
+        include: {
+          user_roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      }),
+      this.prisma.users.count(),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    return this.prisma.users.findUniqueOrThrow({
+      where: { id },
+      include: {
+        user_roles: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.users.findUnique({ where: { id } });
+    if (!user) {
+      throw new BadRequestException('User not Found');
+    }
+
     return this.prisma.users.update({
       where: { id },
       data: { ...updateUserDto },
+      include: {
+        user_roles: {
+          include: {
+            role: true,
+          },
+        },
+      },
     });
   }
 
