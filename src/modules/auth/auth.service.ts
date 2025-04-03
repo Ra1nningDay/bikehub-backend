@@ -10,7 +10,6 @@ import { LoggerService } from 'src/common/logger.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { users } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +19,9 @@ export class AuthService {
     private logger: LoggerService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<users> {
+  async register(
+    registerDto: RegisterDto,
+  ): Promise<{ user: any; token: string }> {
     const { name, email, password } = registerDto;
 
     const existingUser = await this.prisma.users.findUnique({
@@ -69,11 +70,23 @@ export class AuthService {
       },
     });
 
+    const payload = { sub: user.id, email: user.email };
+    const access_token = await this.jwtService.signAsync(payload);
+
     this.logger.log(`User registered successfully: ${email}`);
-    return user;
+    return {
+      user: {
+        id: user.id,
+        name: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        roles: user.user_roles.map((ur) => ur.role.title),
+      },
+      token: access_token,
+    };
   }
 
-  async login(loginDto: LoginDto): Promise<{ access_token: string }> {
+  async login(loginDto: LoginDto): Promise<{ user: any; token: string }> {
     const { email, password } = loginDto;
 
     const user = await this.prisma.users.findUnique({
@@ -102,6 +115,15 @@ export class AuthService {
     const access_token = await this.jwtService.signAsync(payload);
 
     this.logger.log(`User logged in successfully: ${email}`);
-    return { access_token };
+    return {
+      user: {
+        id: user.id,
+        name: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        roles: user.user_roles.map((ur) => ur.role.title),
+      },
+      token: access_token,
+    };
   }
 }
