@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtStrategy } from './jwt.strategy';
 import { LoggerService } from 'src/common/logger.service';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -22,8 +23,10 @@ import { LoggerService } from 'src/common/logger.service';
       inject: [ConfigService],
     }),
     PrismaModule,
+    PassportModule.register({ defaultStrategy: 'google' }),
+    ConfigModule,
   ],
-  providers: [AuthService, JwtStrategy, LoggerService],
+  providers: [AuthService, JwtStrategy, LoggerService, GoogleStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })
