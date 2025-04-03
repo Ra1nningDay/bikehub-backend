@@ -24,7 +24,6 @@ import { GoogleStrategy } from './strategies/google.strategy';
     }),
     PrismaModule,
     PassportModule.register({ defaultStrategy: 'google' }),
-    ConfigModule,
   ],
   providers: [AuthService, JwtStrategy, LoggerService, GoogleStrategy],
   controllers: [AuthController],

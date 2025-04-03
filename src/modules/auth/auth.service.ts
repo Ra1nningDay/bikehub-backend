@@ -119,11 +119,15 @@ export class AuthService {
       user: {
         id: user.id,
         name: user.username,
-        email: user.email,
         avatar: user.avatar,
         roles: user.user_roles.map((ur) => ur.role.title),
       },
       token: access_token,
     };
+  }
+
+  async generateJwt(user: any) {
+    const payload = { email: user.email, sub: user.googleId };
+    return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
   }
 }
