@@ -11,6 +11,10 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
 
+  @IsString({ message: 'Invalid Username format' })
+  @IsNotEmpty({ message: 'Username is required' })
+  name: string;
+
   @IsString()
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(6, { message: 'Password must be at least 6 characters long' })

@@ -9,7 +9,14 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 6000);
+
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  await app.listen(process.env.PORT ?? 3000);
 }
 
 bootstrap().catch((err) => console.error(err));
