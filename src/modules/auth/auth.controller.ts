@@ -1,13 +1,14 @@
 // src/auth/auth.controller.ts
 import {
   Controller,
-  Post,
   Get,
+  Post,
   Body,
   HttpCode,
   HttpStatus,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -31,21 +32,20 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    return;
-  }
+  googleAuth() {}
 
   // Google Callback URL
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req) {
+  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     const user = req.user;
-    const token = await this.authService.generateJwt(user);
+    const token = this.authService.generateJwt(user);
 
-    return {
-      message: 'Google authentication successful',
-      user: {},
-      token: {}, // ส่ง JWT กลับไปที่ frontend
-    };
+    await this.authService.insertUser(user);
+
+    const userData = encodeURIComponent(JSON.stringify(user));
+    res.redirect(
+      `http://localhost:3001/auth/callback?token=${token}&user=${userData}`,
+    );
   }
 }

@@ -48,6 +48,8 @@ export class UsersService {
         email: createUserDto.email,
         password: hash,
         avatar: 'default-avatar.png',
+        oauth_id: '',
+        oauth_provider: '',
         user_roles: {
           create: [
             {

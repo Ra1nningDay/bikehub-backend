@@ -49,6 +49,8 @@ export class AuthService {
         email,
         password: hash,
         avatar: 'default-avatar.png',
+        oauth_id: '',
+        oauth_provider: '',
         user_roles: {
           create: [
             {
@@ -124,6 +126,70 @@ export class AuthService {
       },
       token: access_token,
     };
+  }
+
+  async insertUser(user: any) {
+    const { googleId, email, displayName, avatar } = user;
+
+    const existingUser = await this.prisma.users.findFirst({
+      where: { oauth_id: googleId },
+    });
+
+    const role = await this.prisma.roles.findFirst({
+      where: { title: 'user' },
+    });
+
+    if (!role) {
+      this.logger.error('Registration failed: Role "user" not found');
+      throw new BadRequestException('Role "user" not found');
+    }
+
+    if (!existingUser) {
+      await this.prisma.users.create({
+        data: {
+          email: email,
+          password: '',
+          oauth_id: googleId,
+          oauth_provider: 'google',
+          username: displayName,
+          avatar: avatar,
+          created_at: new Date(),
+          updated_at: new Date(),
+          user_roles: {
+            create: [
+              {
+                role: {
+                  connect: {
+                    id: role.id,
+                  },
+                },
+              },
+            ],
+          },
+        },
+        include: {
+          user_roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      });
+    } else {
+      await this.prisma.users.update({
+        where: {
+          id: existingUser.id,
+        },
+        data: {
+          email,
+          oauth_id: googleId,
+          oauth_provider: 'google',
+          username: displayName,
+          avatar: avatar,
+          updated_at: new Date(),
+        },
+      });
+    }
   }
 
   async generateJwt(user: any) {

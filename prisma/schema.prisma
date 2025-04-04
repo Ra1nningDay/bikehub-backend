@@ -19,7 +19,8 @@ model users {
   email       String    @unique
   password    String
   avatar      String?
-  remember_me String?
+  oauth_provider String
+  oauth_id  String
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   user_roles  user_role[]

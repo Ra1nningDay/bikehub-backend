@@ -14,7 +14,17 @@ async function bootstrap() {
     origin: 'http://localhost:3001',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+    allowedHeaders: 'Content-Type, Authorization',
   });
+
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .use((req, res, next) => {
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+      next();
+    });
 
   await app.listen(process.env.PORT ?? 3000);
 }
