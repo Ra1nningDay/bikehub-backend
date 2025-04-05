@@ -16,7 +16,7 @@ describe('AuthService', () => {
       findFirst: jest.fn(),
     },
     user_roles: {
-      findMany: jest.fn(), // เพิ่ม mock สำหรับ user_roles
+      findMany: jest.fn(),
     },
   };
 
