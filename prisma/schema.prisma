@@ -65,9 +65,22 @@ model motorbikes {
   created_at  DateTime          @default(now())
   updated_at  DateTime          @updatedAt
   brand       motorbike_brands  @relation(fields: [brand_id], references: [id])
+  unit        motorbike_unit[]
   reviews     motorbike_reviews[]
   payments    payments[]
   bookings    bookings[]
+}
+
+model motorbike_unit {
+  id              Int        @id @default(autoincrement())
+  motorbike_id    Int
+  license_plate   String     @unique
+  color           String?
+  image           String?
+  status          String     @default("available")
+  motorbike       motorbikes  @relation(fields: [motorbike_id], references: [id])
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @updatedAt
 }
 
 model motorbike_reviews {

@@ -1,18 +1,79 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuthService } from './auth.service';
+import { LoggerService } from '../../common/logger.service';
+import { JwtModule } from '@nestjs/jwt';
 
-describe('AuthController', () => {
-  let controller: AuthController;
+describe('AuthService', () => {
+  let service: AuthService;
+
+  const prismaMock = {
+    users: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    roles: {
+      findFirst: jest.fn(),
+    },
+    user_roles: {
+      findMany: jest.fn(), // เพิ่ม mock สำหรับ user_roles
+    },
+  };
+
+  const loggerMock = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
+      imports: [
+        JwtModule.register({
+          secret: 'test-secret',
+          signOptions: { expiresIn: '1h' },
+        }),
+      ],
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: prismaMock },
+        { provide: LoggerService, useValue: loggerMock },
+      ],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    service = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  it('should return user by id', async () => {
+    const mockUser = {
+      id: 1, // เพิ่ม id
+      username: 'test',
+      email: 'test@test.com',
+      password: '123456',
+      avatar: null, // เพิ่ม avatar
+      user_roles: [{ role: { title: 'user' } }],
+    };
+
+    prismaMock.users.create.mockResolvedValue(mockUser);
+    const mockRole = { id: 1, title: 'user' };
+    prismaMock.roles.findFirst.mockResolvedValue(mockRole);
+    prismaMock.user_roles.findMany.mockResolvedValue(mockUser.user_roles);
+
+    const result = await service.register({
+      name: 'test',
+      email: 'test@test.com',
+      password: '123456',
+    });
+
+    expect(result).toEqual({
+      user: {
+        id: mockUser.id,
+        name: mockUser.username,
+        email: mockUser.email,
+        avatar: mockUser.avatar,
+        roles: mockUser.user_roles.map((ur) => ur.role.title),
+      },
+      token: expect.any(String),
+    });
   });
 });
