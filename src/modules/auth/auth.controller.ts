@@ -45,7 +45,7 @@ export class AuthController {
 
     const userData = encodeURIComponent(JSON.stringify(user));
     res.redirect(
-      `http://localhost:3001/auth/callback?token=${token}&user=${userData}`,
+      `${process.env.URL_FRONTEND}/auth/callback?token=${token}&user=${userData}`,
     );
   }
 }
