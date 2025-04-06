@@ -15,14 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-
-interface GoogleUser {
-  googleId: string;
-  email: string;
-  displayName: string;
-  avatar: string;
-  accessToken: string;
-}
+import { GoogleUser } from 'custom-types';
 
 @Controller('auth')
 export class AuthController {
@@ -68,7 +61,6 @@ export class AuthController {
     const encodedToken: string = encodeURIComponent(accessToken);
     const frontendUrl: string | undefined =
       this.configService.get<string>('URL_FRONTEND');
-
     if (!frontendUrl) {
       throw new Error('URL_FRONTEND is not defined');
     }

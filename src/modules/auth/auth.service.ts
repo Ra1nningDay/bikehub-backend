@@ -1,4 +1,3 @@
-// src/auth/auth.service.ts
 import {
   Injectable,
   BadRequestException,
@@ -10,6 +9,7 @@ import { LoggerService } from '../../common/logger.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { GoogleUser, User } from 'custom-types';
 
 @Injectable()
 export class AuthService {
@@ -129,7 +129,8 @@ export class AuthService {
   }
 
   async insertUser(user: any) {
-    const { googleId, email, displayName, avatar } = user;
+    const { googleId, email, displayName, avatar }: GoogleUser =
+      user as GoogleUser;
 
     const existingUser = await this.prisma.users.findFirst({
       where: { oauth_id: googleId },
@@ -192,8 +193,8 @@ export class AuthService {
     }
   }
 
-  async generateJwt(user: any) {
-    const payload = { email: user.email, sub: user.googleId };
+  generateJwt(user: User) {
+    const payload = { email: user.email, sub: user.id };
     return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
   }
 }

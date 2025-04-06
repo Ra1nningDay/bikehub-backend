@@ -73,7 +73,7 @@ describe('AuthService', () => {
         avatar: mockUser.avatar,
         roles: mockUser.user_roles.map((ur) => ur.role.title),
       },
-      token: expect.any(String),
+      token: expect.any(String) as unknown as string,
     });
   });
 });

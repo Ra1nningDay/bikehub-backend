@@ -3,6 +3,21 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, StrategyOptions } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 
+interface GoogleProfile {
+  id: string;
+  displayName: string;
+  emails?: Array<{ value: string; verified: boolean }>;
+  photos?: Array<{ value: string }>;
+}
+
+interface AuthenticatedUser {
+  googleId: string;
+  email: string;
+  displayName: string;
+  avatar?: string;
+  accessToken: string;
+}
+
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(configService: ConfigService) {
@@ -16,17 +31,27 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super(options);
   }
 
-  async validate(
+  validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
-    done: Function,
-  ): Promise<any> {
-    const user = {
+    profile: GoogleProfile,
+    done: (error: any, user?: any) => void,
+  ): any {
+    const email = profile.emails?.[0]?.value;
+    if (!email) {
+      return done(new Error('No email found in Google profile'));
+    }
+
+    const avatar = profile.photos?.[0]?.value;
+    if (!avatar) {
+      return done(new Error('No avatar found in Google profile'));
+    }
+
+    const user: AuthenticatedUser = {
       googleId: profile.id,
-      email: profile.emails[0].value,
+      email,
       displayName: profile.displayName,
-      avatar: profile.photos[0].value,
+      avatar,
       accessToken,
     };
     done(null, user);

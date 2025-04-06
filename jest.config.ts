@@ -9,5 +9,5 @@ export default {
   }),
   moduleFileExtensions: ['ts', 'js', 'json'],
   rootDir: '.', // ระบุ root directory
-  moduleDirectories: ['node_modules', 'src'], // ช่วยให้ jest หา module ใน src ได้
+  moduleDirectories: ['node_modules', 'src', 'test'],
 };
