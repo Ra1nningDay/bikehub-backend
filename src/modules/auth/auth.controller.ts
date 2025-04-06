@@ -1,4 +1,3 @@
-// src/auth/auth.controller.ts
 import {
   Controller,
   Get,
@@ -15,6 +14,15 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
+
+interface GoogleUser {
+  googleId: string;
+  email: string;
+  displayName: string;
+  avatar: string;
+  accessToken: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -41,12 +49,15 @@ export class AuthController {
   // Google Callback URL
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
-    const { accessToken, ...rest } = req.user;
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    if (!req.user) {
+      throw new Error('No user from Google');
+    }
+    const { accessToken, ...rest }: GoogleUser = req.user as GoogleUser;
 
     await this.authService.insertUser(rest);
 
-    const encodedUserData = encodeURIComponent(
+    const encodedUserData: string = encodeURIComponent(
       JSON.stringify({
         id: rest.googleId,
         email: rest.email,
@@ -54,8 +65,9 @@ export class AuthController {
         avatar: rest.avatar,
       }),
     );
-    const encodedToken = encodeURIComponent(accessToken);
-    const frontendUrl = this.configService.get<string>('URL_FRONTEND'); // อ่าน URL_FRONTEND
+    const encodedToken: string = encodeURIComponent(accessToken);
+    const frontendUrl: string | undefined =
+      this.configService.get<string>('URL_FRONTEND');
 
     if (!frontendUrl) {
       throw new Error('URL_FRONTEND is not defined');
