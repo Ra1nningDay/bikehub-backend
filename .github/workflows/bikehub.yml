@@ -24,7 +24,7 @@ jobs:
         run: npm run test
       - name: Run ESLint 
         run: npm run lint 
-      - Run Snyk test
+      - name: Run Snyk test
         uses: snyk/actions/nodejs@v2
 
 
