@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoleService } from './role.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoggerService } from 'src/common/logger.service';
+import { LoggerService } from '../../common/logger.service';
 
 describe('RoleService', () => {
   let service: RoleService;
@@ -29,7 +29,7 @@ describe('RoleService', () => {
     service = module.get<RoleService>(RoleService);
   });
 
-  it('should be defined', () => {
+  it('should return when request all role', () => {
     expect(service).toBeDefined();
   });
 });
