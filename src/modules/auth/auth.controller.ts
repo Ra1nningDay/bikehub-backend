@@ -42,19 +42,26 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
-    const user = req.user;
-    const token = this.authService.generateJwt(user);
+    const { accessToken, ...rest } = req.user;
 
-    await this.authService.insertUser(user);
+    await this.authService.insertUser(rest);
 
-    const userData = encodeURIComponent(JSON.stringify(user));
+    const encodedUserData = encodeURIComponent(
+      JSON.stringify({
+        id: rest.googleId,
+        email: rest.email,
+        name: rest.displayName,
+        avatar: rest.avatar,
+      }),
+    );
+    const encodedToken = encodeURIComponent(accessToken);
     const frontendUrl = this.configService.get<string>('URL_FRONTEND'); // อ่าน URL_FRONTEND
 
     if (!frontendUrl) {
       throw new Error('URL_FRONTEND is not defined');
     }
     res.redirect(
-      `${frontendUrl}/auth/callback?token=${token}&user=${userData}`,
+      `${frontendUrl}/auth/callback?&user=${encodedUserData}&token=${encodedToken}`,
     );
   }
 }
