@@ -9,7 +9,7 @@ import { LoggerService } from '../../common/logger.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { GoogleUser, User } from 'custom-types';
+import { GoogleUser, JwtPayLoad, User } from 'custom-types';
 
 @Injectable()
 export class AuthService {
@@ -19,9 +19,11 @@ export class AuthService {
     private logger: LoggerService,
   ) {}
 
-  async register(
-    registerDto: RegisterDto,
-  ): Promise<{ user: any; token: string }> {
+  async register(registerDto: RegisterDto): Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  }> {
     const { name, email, password } = registerDto;
 
     const existingUser = await this.prisma.users.findUnique({
@@ -72,23 +74,26 @@ export class AuthService {
       },
     });
 
-    const payload = { sub: user.id, email: user.email };
+    const roles = user.user_roles.map((ur) => ur.role.title);
+    const payload = { sub: user.id, email: user.email, roles };
     const access_token = await this.jwtService.signAsync(payload);
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
 
     this.logger.log(`User registered successfully: ${email}`);
     return {
-      user: {
-        id: user.id,
-        name: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        roles: user.user_roles.map((ur) => ur.role.title),
-      },
-      token: access_token,
+      access_token,
+      refresh_token,
+      expires_in: 3600,
     };
   }
 
-  async login(loginDto: LoginDto): Promise<{ user: any; token: string }> {
+  async login(loginDto: LoginDto): Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  }> {
     const { email, password } = loginDto;
 
     const user = await this.prisma.users.findUnique({
@@ -113,18 +118,59 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const roles = user.user_roles.map((ur) => ur.role.title);
+    const payload = { sub: user.id, email: user.email, roles };
     const access_token = await this.jwtService.signAsync(payload);
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
 
     this.logger.log(`User logged in successfully: ${email}`);
     return {
-      user: {
-        id: user.id,
-        name: user.username,
-        avatar: user.avatar,
-        roles: user.user_roles.map((ur) => ur.role.title),
+      access_token,
+      refresh_token,
+      expires_in: 3600,
+    };
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const payload: JwtPayLoad =
+        await this.jwtService.verifyAsync(refreshToken);
+      const newPayload: JwtPayLoad = {
+        sub: payload.sub,
+        email: payload.email,
+        roles: payload.roles,
+      };
+      const access_token = await this.jwtService.signAsync(newPayload, {
+        expiresIn: '1h',
+      });
+      return { access_token, expires_in: 3600 };
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  async getUserById(id: number) {
+    const user = await this.prisma.users.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        user_roles: {
+          include: {
+            role: true,
+          },
+        },
       },
-      token: access_token,
+    });
+
+    return {
+      id: user?.id,
+      email: user?.email,
+      name: user?.username,
+      roles: user?.user_roles.map((ur) => ur.role.title),
     };
   }
 

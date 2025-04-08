@@ -15,7 +15,16 @@ declare module 'custom-types' {
   }
 
   export interface JwtPayLoad {
-    sub: nunber;
+    sub: number;
     email: string;
+    roles: string;
+  }
+
+  export interface Jwt {
+    user: {
+      id: number;
+      email: string;
+      roles: string;
+    };
   }
 }

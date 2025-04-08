@@ -1,79 +1,129 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../prisma/prisma.service';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { LoggerService } from '../../common/logger.service';
-import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { Jwt } from 'custom-types'; // Custom types you are using
+import { PrismaService } from '../prisma/prisma.service'; // Assuming PrismaService is a wrapper for Prisma client
 
-describe('AuthService', () => {
-  let service: AuthService;
+// Mock the dependencies
+const mockAuthService = {
+  register: jest.fn(),
+  login: jest.fn(),
+  getUserById: jest.fn(),
+  insertUser: jest.fn(),
+};
 
-  const prismaMock = {
-    users: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-    },
-    roles: {
-      findFirst: jest.fn(),
-    },
-    user_roles: {
-      findMany: jest.fn(),
-    },
-  };
+const mockConfigService = {
+  get: jest.fn().mockReturnValue('http://localhost:3000'), // Mock frontend URL
+};
 
-  const loggerMock = {
-    log: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-  };
+const mockPrismaService = {
+  user: {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+  },
+};
+
+describe('AuthController', () => {
+  let authController: AuthController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        JwtModule.register({
-          secret: 'test-secret',
-          signOptions: { expiresIn: '1h' },
-        }),
-      ],
+      controllers: [AuthController],
       providers: [
-        AuthService,
-        { provide: PrismaService, useValue: prismaMock },
-        { provide: LoggerService, useValue: loggerMock },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: ConfigService, useValue: mockConfigService },
+        { provide: PrismaService, useValue: mockPrismaService },
       ],
     }).compile();
 
-    service = module.get<AuthService>(AuthService);
+    authController = module.get<AuthController>(AuthController);
   });
 
-  it('should return user by id', async () => {
-    const mockUser = {
-      id: 1, // เพิ่ม id
-      username: 'test',
-      email: 'test@test.com',
-      password: '123456',
-      avatar: null, // เพิ่ม avatar
-      user_roles: [{ role: { title: 'user' } }],
-    };
+  it('should be defined', () => {
+    expect(authController).toBeDefined();
+  });
 
-    prismaMock.users.create.mockResolvedValue(mockUser);
-    const mockRole = { id: 1, title: 'user' };
-    prismaMock.roles.findFirst.mockResolvedValue(mockRole);
-    prismaMock.user_roles.findMany.mockResolvedValue(mockUser.user_roles);
+  describe('register', () => {
+    it('should call authService.register with registerDto', async () => {
+      const registerDto = {
+        name: 'test',
+        email: 'test@example.com',
+        password: 'password',
+      };
+      mockAuthService.register.mockResolvedValue({});
 
-    const result = await service.register({
-      name: 'test',
-      email: 'test@test.com',
-      password: '123456',
+      await expect(authController.register(registerDto)).resolves.not.toThrow();
+      expect(mockAuthService.register).toHaveBeenCalledWith(registerDto);
+    });
+  });
+
+  describe('login', () => {
+    it('should call authService.login with loginDto and return an access token', async () => {
+      const loginDto = { email: 'test@example.com', password: 'password' };
+      mockAuthService.login.mockResolvedValue({ accessToken: 'jwt-token' });
+
+      await expect(authController.login(loginDto)).resolves.toEqual({
+        accessToken: 'jwt-token',
+      });
+      expect(mockAuthService.login).toHaveBeenCalledWith(loginDto);
+    });
+  });
+
+  describe('getProfile', () => {
+    it('should call authService.getUserById and return user data', async () => {
+      const req: Jwt = { user: { id: 1 } } as Jwt;
+      mockAuthService.getUserById.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+      });
+
+      await expect(authController.getProfile(req)).resolves.toEqual({
+        id: 1,
+        email: 'test@example.com',
+      });
+      expect(mockAuthService.getUserById).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('googleAuthRedirect', () => {
+    it('should call authService.insertUser and redirect to frontend URL', async () => {
+      const mockReq = {
+        user: {
+          googleId: 'google-id',
+          email: 'google@example.com',
+          displayName: 'Google User',
+          avatar: 'google-avatar',
+        },
+      };
+      const mockRes = { redirect: jest.fn() };
+      mockAuthService.insertUser.mockResolvedValue({});
+
+      await authController.googleAuthRedirect(mockReq as any, mockRes as any);
+
+      expect(mockAuthService.insertUser).toHaveBeenCalledWith(mockReq.user);
+      expect(mockRes.redirect).toHaveBeenCalledWith(
+        'http://localhost:3000/auth/callback?&user=' +
+          encodeURIComponent(
+            JSON.stringify({
+              id: 'google-id',
+              email: 'google@example.com',
+              name: 'Google User',
+              avatar: 'google-avatar',
+            }),
+          ) +
+          '&token=' +
+          encodeURIComponent('undefined'),
+      );
     });
 
-    expect(result).toEqual({
-      user: {
-        id: mockUser.id,
-        name: mockUser.username,
-        email: mockUser.email,
-        avatar: mockUser.avatar,
-        roles: mockUser.user_roles.map((ur) => ur.role.title),
-      },
-      token: expect.any(String) as unknown as string,
+    it('should throw an error if no user from Google', async () => {
+      const mockReq = { user: null };
+      const mockRes = {};
+
+      await expect(
+        authController.googleAuthRedirect(mockReq as any, mockRes as any),
+      ).rejects.toThrow('No user from Google');
     });
   });
 });

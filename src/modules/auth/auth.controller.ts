@@ -15,7 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { GoogleUser } from 'custom-types';
+import { GoogleUser, Jwt } from 'custom-types';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +33,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  async getProfile(@Req() req: Jwt) {
+    return this.authService.getUserById(+req.user.id);
   }
 
   @Get('google')

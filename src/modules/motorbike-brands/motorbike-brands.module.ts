@@ -4,6 +4,6 @@ import { MotorbikeBrandsService } from './motorbike-brands.service';
 
 @Module({
   controllers: [MotorbikeBrandsController],
-  providers: [MotorbikeBrandsService]
+  providers: [MotorbikeBrandsService],
 })
 export class MotorbikeBrandsModule {}

@@ -4,7 +4,6 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('MotorbikesService', () => {
   let service: MotorbikesService;
-  let prisma: PrismaService;
 
   // Mock PrismaService
   const mockPrismaService = {
@@ -50,7 +49,6 @@ describe('MotorbikesService', () => {
     }).compile();
 
     service = module.get<MotorbikesService>(MotorbikesService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {
@@ -67,7 +65,7 @@ describe('MotorbikesService', () => {
         price: 50000,
         brand_id: 1,
       });
-      expect(prisma.motorbikes.create).toHaveBeenCalledWith({
+      expect(mockPrismaService.motorbikes.create).toHaveBeenCalledWith({
         data: {
           name: dto.name,
           price: dto.price,
@@ -83,7 +81,7 @@ describe('MotorbikesService', () => {
       expect(result).toEqual([
         { id: 1, name: 'Honda CBR', price: 50000, brand_id: 1 },
       ]);
-      expect(prisma.motorbikes.findMany).toHaveBeenCalled();
+      expect(mockPrismaService.motorbikes.findMany).toHaveBeenCalled();
     });
   });
 
@@ -96,7 +94,7 @@ describe('MotorbikesService', () => {
         price: 50000,
         brand_id: 1,
       });
-      expect(prisma.motorbikes.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.motorbikes.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
         include: { brand: true },
       });
@@ -113,7 +111,7 @@ describe('MotorbikesService', () => {
         price: 60000,
         brand_id: 1,
       });
-      expect(prisma.motorbikes.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.motorbikes.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: { name: dto.name, price: dto.price, brand: undefined },
       });
@@ -129,7 +127,7 @@ describe('MotorbikesService', () => {
         price: 50000,
         brand_id: 1,
       });
-      expect(prisma.motorbikes.delete).toHaveBeenCalledWith({
+      expect(mockPrismaService.motorbikes.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
     });

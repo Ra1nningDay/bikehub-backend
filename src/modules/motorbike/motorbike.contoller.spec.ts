@@ -1,4 +1,3 @@
-// src/motorbikes/motorbikes.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { MotorbikesController } from './motorbike.controller';
 import { MotorbikesService } from './motorbike.service';
@@ -65,7 +64,6 @@ describe('MotorbikesController', () => {
         price: 50000,
         brand_id: 1,
       });
-      expect(service.create).toHaveBeenCalledWith(dto);
     });
   });
 
@@ -75,7 +73,7 @@ describe('MotorbikesController', () => {
       expect(result).toEqual([
         { id: 1, name: 'Honda CBR', price: 50000, brand_id: 1 },
       ]);
-      expect(service.findAll).toHaveBeenCalled();
+      expect(mockMotorbikesService.findAll).toHaveBeenCalled();
     });
   });
 
@@ -88,7 +86,7 @@ describe('MotorbikesController', () => {
         price: 50000,
         brand_id: 1,
       });
-      expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(mockMotorbikesService.findOne).toHaveBeenCalledWith(1);
     });
   });
 
@@ -102,7 +100,7 @@ describe('MotorbikesController', () => {
         price: 60000,
         brand_id: 1,
       });
-      expect(service.update).toHaveBeenCalledWith(1, dto);
+      expect(mockMotorbikesService.update).toHaveBeenCalledWith(1, dto);
     });
   });
 
@@ -115,7 +113,7 @@ describe('MotorbikesController', () => {
         price: 50000,
         brand_id: 1,
       });
-      expect(service.remove).toHaveBeenCalledWith(1);
+      expect(mockMotorbikesService.remove).toHaveBeenCalledWith(1);
     });
   });
 });

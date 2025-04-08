@@ -1,4 +1,3 @@
-// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -22,7 +21,6 @@ import { GoogleStrategy } from './strategies/google.strategy';
       }),
       inject: [ConfigService],
     }),
-    PrismaModule,
     PassportModule.register({ defaultStrategy: 'google' }),
   ],
   providers: [AuthService, JwtStrategy, LoggerService, GoogleStrategy],
