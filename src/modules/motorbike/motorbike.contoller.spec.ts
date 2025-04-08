@@ -4,7 +4,6 @@ import { MotorbikesService } from './motorbike.service';
 
 describe('MotorbikesController', () => {
   let controller: MotorbikesController;
-  let service: MotorbikesService;
 
   const mockMotorbikesService = {
     create: jest.fn().mockResolvedValue({
@@ -47,7 +46,6 @@ describe('MotorbikesController', () => {
     }).compile();
 
     controller = module.get<MotorbikesController>(MotorbikesController);
-    service = module.get<MotorbikesService>(MotorbikesService);
   });
 
   it('should be defined', () => {

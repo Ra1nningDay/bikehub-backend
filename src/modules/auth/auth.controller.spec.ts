@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { Jwt } from 'custom-types'; // Custom types you are using
 import { PrismaService } from '../prisma/prisma.service'; // Assuming PrismaService is a wrapper for Prisma client
+import { Request, Response } from 'express';
 
 // Mock the dependencies
 const mockAuthService = {
@@ -95,11 +96,16 @@ describe('AuthController', () => {
           displayName: 'Google User',
           avatar: 'google-avatar',
         },
-      };
-      const mockRes = { redirect: jest.fn() };
+      } as Partial<Request>;
+      const mockRes = {
+        redirect: jest.fn(),
+      } as Partial<Response>;
       mockAuthService.insertUser.mockResolvedValue({});
 
-      await authController.googleAuthRedirect(mockReq as any, mockRes as any);
+      await authController.googleAuthRedirect(
+        mockReq as Request,
+        mockRes as Response,
+      );
 
       expect(mockAuthService.insertUser).toHaveBeenCalledWith(mockReq.user);
       expect(mockRes.redirect).toHaveBeenCalledWith(
@@ -118,11 +124,21 @@ describe('AuthController', () => {
     });
 
     it('should throw an error if no user from Google', async () => {
-      const mockReq = { user: null };
+      const mockReq = {
+        user: {
+          googleId: 'google-id',
+          email: 'google@example.com',
+          displayName: 'Google User',
+          avatar: 'google-avatar',
+        },
+      } as Partial<Request>;
       const mockRes = {};
 
       await expect(
-        authController.googleAuthRedirect(mockReq as any, mockRes as any),
+        authController.googleAuthRedirect(
+          mockReq as Request,
+          mockRes as Response,
+        ),
       ).rejects.toThrow('No user from Google');
     });
   });
