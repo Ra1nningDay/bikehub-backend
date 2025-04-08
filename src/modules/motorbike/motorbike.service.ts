@@ -7,7 +7,6 @@ import { UpdateMotorbikeDto } from './dto/update-motorbike.dto';
 export class MotorbikesService {
   constructor(private prisma: PrismaService) {}
 
-  // Create
   async create(createMotorbikeDto: CreateMotorbikeDto) {
     return this.prisma.motorbikes.create({
       data: {
@@ -20,14 +19,12 @@ export class MotorbikesService {
     });
   }
 
-  // Read (All)
   async findAll() {
     return this.prisma.motorbikes.findMany({
-      include: { brand: true }, // รวมข้อมูลยี่ห้อ
+      include: { brand: true },
     });
   }
 
-  // Read (One)
   async findOne(id: number) {
     return this.prisma.motorbikes.findUnique({
       where: { id },
@@ -35,7 +32,6 @@ export class MotorbikesService {
     });
   }
 
-  // Update
   async update(id: number, updateMotorbikeDto: UpdateMotorbikeDto) {
     return this.prisma.motorbikes.update({
       where: { id },
@@ -49,7 +45,6 @@ export class MotorbikesService {
     });
   }
 
-  // Delete
   async remove(id: number) {
     return this.prisma.motorbikes.delete({
       where: { id },
