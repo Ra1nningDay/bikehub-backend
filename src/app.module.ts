@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerService } from './common/logger.service';
 import { MotorbikeModule } from './modules/motorbike/motorbike.module';
+import { MotorbikeBrandsModule } from './modules/motorbike-brands/motorbike-brands.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MotorbikeModule } from './modules/motorbike/motorbike.module';
     PrismaModule,
     AuthModule,
     MotorbikeModule,
+    MotorbikeBrandsModule,
   ],
   providers: [LoggerService],
 })
