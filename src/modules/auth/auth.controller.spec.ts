@@ -124,15 +124,8 @@ describe('AuthController', () => {
     });
 
     it('should throw an error if no user from Google', async () => {
-      const mockReq = {
-        user: {
-          googleId: 'google-id',
-          email: 'google@example.com',
-          displayName: 'Google User',
-          avatar: 'google-avatar',
-        },
-      } as Partial<Request>;
-      const mockRes = {};
+      const mockReq = { user: undefined } as Partial<Request>;
+      const mockRes = {} as Partial<Response>;
 
       await expect(
         authController.googleAuthRedirect(
