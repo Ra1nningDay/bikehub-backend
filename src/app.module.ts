@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerService } from './common/logger.service';
+import { MotorbikeModule } from './modules/motorbike/motorbike.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { LoggerService } from './common/logger.service';
     UsersModule,
     PrismaModule,
     AuthModule,
+    MotorbikeModule,
   ],
   providers: [LoggerService],
 })
