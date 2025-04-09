@@ -3,14 +3,11 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.motorbike_brands.createMany({
-    data: [
-      { name: 'Honda', description: 'Japanese motorcycle brand' },
-      { name: 'Yamaha', description: 'High-performance bikes' },
-      { name: 'Kawasaki', description: 'Known for sport bikes' },
-    ],
+  // Seeder สำหรับ roles
+  await prisma.roles.createMany({
+    data: [{ title: 'admin' }, { title: 'user' }],
   });
-  console.log('Seeding completed!');
+  console.log('Roles seeding completed!');
 }
 
 main()

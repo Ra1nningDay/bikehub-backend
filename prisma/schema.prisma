@@ -62,6 +62,7 @@ model motorbikes {
   brand_id    Int
   name        String
   price       Float
+  image      String   @default("")
   created_at  DateTime          @default(now())
   updated_at  DateTime          @updatedAt
   brand       motorbike_brands  @relation(fields: [brand_id], references: [id])

@@ -12,6 +12,7 @@ export class MotorbikesService {
       data: {
         name: createMotorbikeDto.name,
         price: createMotorbikeDto.price,
+        image: createMotorbikeDto.image,
         brand: {
           connect: { id: createMotorbikeDto.brand_id },
         },

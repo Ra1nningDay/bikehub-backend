@@ -12,4 +12,7 @@ export class CreateMotorbikeDto {
 
   @IsNotEmpty()
   brand_id: number;
+
+  @IsString()
+  image: string;
 }
