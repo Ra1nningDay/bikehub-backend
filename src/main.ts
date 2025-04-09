@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { Request, Response, NextFunction, Express } from 'express';
+import serveStatic from 'serve-static';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +19,8 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization',
   });
+
+  app.use('/uploads', serveStatic(join(__dirname, '../uploads')));
 
   const expressApp = app.getHttpAdapter().getInstance() as Express;
 

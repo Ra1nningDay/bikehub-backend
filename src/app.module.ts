@@ -8,6 +8,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerService } from './common/logger.service';
 import { MotorbikeModule } from './modules/motorbike/motorbike.module';
 import { MotorbikeBrandsModule } from './modules/motorbike-brands/motorbike-brands.module';
+import { v2 as cloudinary } from 'cloudinary';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -24,6 +26,19 @@ import { MotorbikeBrandsModule } from './modules/motorbike-brands/motorbike-bran
     MotorbikeModule,
     MotorbikeBrandsModule,
   ],
-  providers: [LoggerService],
+  providers: [
+    LoggerService,
+    {
+      provide: 'CLOUDINARY',
+      useFactory: (configService: ConfigService) => {
+        return cloudinary.config({
+          cloud_name: configService.get('CLOUDINARY_CLOUD_NAME'),
+          api_key: configService.get('CLOUDINARY_API_KEY'),
+          api_secret: configService.get('CLOUDINARY_API_SECRET'),
+        });
+      },
+      inject: [ConfigService],
+    },
+  ],
 })
 export class AppModule {}

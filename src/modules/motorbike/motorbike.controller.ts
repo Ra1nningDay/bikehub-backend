@@ -1,3 +1,4 @@
+// motorbike.controller.ts
 import {
   Controller,
   Get,
@@ -7,7 +8,10 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MotorbikesService } from './motorbike.service';
 import { CreateMotorbikeDto } from './dto/create-motorbike.dto';
 import { UpdateMotorbikeDto } from './dto/update-motorbike.dto';
@@ -17,30 +21,37 @@ export class MotorbikesController {
   constructor(private readonly motorbikesService: MotorbikesService) {}
 
   @Post()
-  create(@Body() createMotorbikeDto: CreateMotorbikeDto) {
-    return this.motorbikesService.create(createMotorbikeDto);
+  @UseInterceptors(FileInterceptor('image'))
+  async create(
+    @Body() createMotorbikeDto: CreateMotorbikeDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    this.motorbikesService.handleFileUpload(file);
+    return await this.motorbikesService.create(createMotorbikeDto, file);
   }
 
   @Get()
-  findAll() {
-    return this.motorbikesService.findAll();
+  async findAll() {
+    return await this.motorbikesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.motorbikesService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.motorbikesService.findOne(id);
   }
 
   @Put(':id')
-  update(
+  @UseInterceptors(FileInterceptor('image'))
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMotorbikeDto: UpdateMotorbikeDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.motorbikesService.update(id, updateMotorbikeDto);
+    return await this.motorbikesService.update(id, updateMotorbikeDto, file);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.motorbikesService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.motorbikesService.remove(id);
   }
 }
