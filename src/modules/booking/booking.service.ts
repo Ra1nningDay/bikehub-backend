@@ -42,6 +42,13 @@ export class BookingService {
     });
   }
 
+  async getBookingsByUserId(userId: number) {
+    return this.prisma.bookings.findMany({
+      where: { user_id: userId },
+      include: { motorbike: true },
+    });
+  }
+
   async getBookingsByUser(user_id: number) {
     return this.prisma.bookings.findMany({
       where: {

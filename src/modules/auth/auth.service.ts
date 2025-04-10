@@ -174,7 +174,7 @@ export class AuthService {
     };
   }
 
-  async insertUser(user: any) {
+  async insertUser(user: any): Promise<User> {
     const { googleId, email, displayName, avatar }: GoogleUser =
       user as GoogleUser;
 
@@ -191,8 +191,10 @@ export class AuthService {
       throw new BadRequestException('Role "user" not found');
     }
 
+    let createdUser;
+
     if (!existingUser) {
-      await this.prisma.users.create({
+      createdUser = await this.prisma.users.create({
         data: {
           email: email,
           password: '',
@@ -223,7 +225,7 @@ export class AuthService {
         },
       });
     } else {
-      await this.prisma.users.update({
+      createdUser = await this.prisma.users.update({
         where: {
           id: existingUser.id,
         },
@@ -235,8 +237,17 @@ export class AuthService {
           avatar: avatar,
           updated_at: new Date(),
         },
+        include: {
+          user_roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
       });
     }
+
+    return createdUser as User;
   }
 
   generateJwt(user: User) {

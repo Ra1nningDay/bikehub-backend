@@ -31,6 +31,11 @@ export class BookingController {
     return await this.bookingService.getAllBookings();
   }
 
+  @Get('user/:userId')
+  async getBookingsByUserId(@Param('userId') userId: string) {
+    return await this.bookingService.getBookingsByUserId(+userId);
+  }
+
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   async getMyBookings(@Req() req: Jwt) {

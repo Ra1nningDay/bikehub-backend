@@ -69,24 +69,27 @@ export class AuthController {
     if (!req.user) {
       throw new Error('No user from Google');
     }
+
     const { accessToken, ...rest }: GoogleUser = req.user as GoogleUser;
 
-    await this.authService.insertUser(rest);
-
+    const user = await this.authService.insertUser(rest);
     const encodedUserData: string = encodeURIComponent(
       JSON.stringify({
-        id: rest.googleId,
+        id: user.id,
         email: rest.email,
         name: rest.displayName,
         avatar: rest.avatar,
       }),
     );
+
     const encodedToken: string = encodeURIComponent(accessToken);
     const frontendUrl: string | undefined =
       this.configService.get<string>('URL_FRONTEND');
+
     if (!frontendUrl) {
       throw new Error('URL_FRONTEND is not defined');
     }
+
     res.redirect(
       `${frontendUrl}/auth/callback?&user=${encodedUserData}&token=${encodedToken}`,
     );
