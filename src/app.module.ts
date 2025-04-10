@@ -10,6 +10,7 @@ import { MotorbikeModule } from './modules/motorbike/motorbike.module';
 import { MotorbikeBrandsModule } from './modules/motorbike-brands/motorbike-brands.module';
 import { v2 as cloudinary } from 'cloudinary';
 import { ConfigService } from '@nestjs/config';
+import { BookingModule } from './modules/booking/booking.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ConfigService } from '@nestjs/config';
     AuthModule,
     MotorbikeModule,
     MotorbikeBrandsModule,
+    BookingModule,
   ],
   providers: [
     LoggerService,

@@ -62,7 +62,13 @@ export class MotorbikesService {
       });
 
       this.logger.log(`Motorbike created: ${motorbike.id}`);
-      return motorbike;
+
+      return {
+        brand: motorbike.brand,
+        name: motorbike.name,
+        price: motorbike.price,
+        image: motorbike.image,
+      };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
@@ -70,7 +76,7 @@ export class MotorbikesService {
       throw new Error('Failed to create motorbike');
     }
   }
-  // ฟังก์ชันดึงข้อมูลมอเตอร์ไซค์ทั้งหมด
+
   async findAll() {
     try {
       const motorbikes = await this.prisma.motorbikes.findMany({
@@ -106,21 +112,25 @@ export class MotorbikesService {
     }
   }
 
-  // ฟังก์ชันการอัปเดตมอเตอร์ไซค์
   async update(
     id: number,
     updateMotorbikeDto: UpdateMotorbikeDto,
     file?: Express.Multer.File,
   ) {
     try {
+      this.logger.log(
+        `Updating motorbike ${id} with data: ${JSON.stringify(updateMotorbikeDto)}`,
+      );
+      this.logger.log(`File uploaded: ${file ? file.path : 'No file'}`);
+
       const motorbike = await this.findOne(id);
 
       let imageUrl = motorbike.image;
       if (file) {
         if (imageUrl) {
-          await this.deleteImage(imageUrl); // ลบไฟล์เก่าก่อน
+          await this.deleteImage(imageUrl);
         }
-        imageUrl = this.handleFileUpload(file).filePath; // อัปโหลดไฟล์ใหม่
+        imageUrl = this.handleFileUpload(file).filePath;
       }
 
       const updatedMotorbike = await this.prisma.motorbikes.update({
@@ -145,7 +155,6 @@ export class MotorbikesService {
       throw error;
     }
   }
-
   // ฟังก์ชันลบมอเตอร์ไซค์
   async remove(id: number) {
     try {

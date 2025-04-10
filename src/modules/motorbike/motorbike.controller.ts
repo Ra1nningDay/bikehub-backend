@@ -26,7 +26,12 @@ export class MotorbikesController {
     @Body() createMotorbikeDto: CreateMotorbikeDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    this.motorbikesService.handleFileUpload(file);
+    console.log('Received createMotorbikeDto:', createMotorbikeDto);
+    console.log(
+      'Received file:',
+      file ? file.originalname : 'No file uploaded',
+    );
+
     return await this.motorbikesService.create(createMotorbikeDto, file);
   }
 

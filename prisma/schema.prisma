@@ -21,7 +21,23 @@ model users {
   reviews        motorbike_reviews[]
   payments       payments[]
   user_roles     user_role[]
+  user_personal_info user_personal_info[]
 }
+
+model user_personal_info {
+  id            Int      @id @default(autoincrement())
+  user_id       Int      @unique
+  first_name    String
+  last_name     String
+  date_of_birth DateTime
+  phone_number  String
+  address       String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user          users    @relation(fields: [user_id], references: [id])
+}
+
 
 model roles {
   id          Int         @id @default(autoincrement())
