@@ -7,5 +7,6 @@ import { LoggerService } from 'src/common/logger.service';
 @Module({
   controllers: [BookingController],
   providers: [BookingService, PrismaService, LoggerService],
+  exports: [BookingService],
 })
 export class BookingModule {}

@@ -11,6 +11,7 @@ import { MotorbikeBrandsModule } from './modules/motorbike-brands/motorbike-bran
 import { v2 as cloudinary } from 'cloudinary';
 import { ConfigService } from '@nestjs/config';
 import { BookingModule } from './modules/booking/booking.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { BookingModule } from './modules/booking/booking.module';
     MotorbikeModule,
     MotorbikeBrandsModule,
     BookingModule,
+    PaymentModule,
   ],
   providers: [
     LoggerService,
